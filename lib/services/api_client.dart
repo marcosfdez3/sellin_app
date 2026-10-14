@@ -1,15 +1,24 @@
 import 'package:dio/dio.dart';
 
-// Cambia esta URL cuando despliegues el backend
-// En desarrollo: usa tu IP local si pruebas en dispositivo físico
+// Por defecto usa el backend de Render. Para usar el backend en local:
+//   flutter run --dart-define=API_URL=http://<IP-de-tu-PC>:8000/api/v1
 // En emulador Android: 10.0.2.2 apunta a localhost de tu PC
-const String kBaseUrl = 'https://sellin-backend.onrender.com';
+const String kBaseUrl = String.fromEnvironment(
+  'API_URL',
+  defaultValue: 'https://sellin-backend.onrender.com/api/v1',
+);
 
 class ApiClient {
   static final ApiClient _instance = ApiClient._internal();
   factory ApiClient() => _instance;
 
   late final Dio _dio;
+
+  /// Token JWT de la sesión actual; lo gestiona AuthController.
+  String? token;
+
+  /// Se llama cuando el backend responde 401 (token caducado o inválido).
+  void Function()? onUnauthorized;
 
   ApiClient._internal() {
     _dio = Dio(BaseOptions(
@@ -19,10 +28,63 @@ class ApiClient {
       headers: {'Content-Type': 'application/json'},
     ));
 
+    _dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        if (token != null) options.headers['Authorization'] = 'Bearer $token';
+        handler.next(options);
+      },
+      onError: (error, handler) {
+        final isAuthCall = error.requestOptions.path.startsWith('/auth/');
+        if (error.response?.statusCode == 401 && !isAuthCall) onUnauthorized?.call();
+        handler.next(error);
+      },
+    ));
+
     _dio.interceptors.add(LogInterceptor(
       requestBody: false,
       responseBody: false,
     ));
+  }
+
+  // ─── Auth ────────────────────────────────────────────────────────────────────
+
+  /// Devuelve el token JWT. Lanza [AuthException] con un mensaje para el usuario.
+  Future<String> login(String email, String password) =>
+      _authRequest('/auth/login', email, password);
+
+  Future<String> register(String email, String password) =>
+      _authRequest('/auth/register', email, password);
+
+  /// Cambia el ID token de Google por nuestro token JWT.
+  Future<String> loginWithGoogle(String idToken) =>
+      _authRequest('/auth/google', null, null, idToken: idToken);
+
+  Future<String> _authRequest(
+    String path,
+    String? email,
+    String? password, {
+    String? idToken,
+  }) async {
+    final data = idToken != null
+        ? {'id_token': idToken}
+        : {'email': email, 'password': password};
+    try {
+      final response = await _dio.post(path, data: data);
+      return response.data['access_token'] as String;
+    } on DioException catch (e) {
+      throw AuthException(_authErrorMessage(e));
+    }
+  }
+
+  String _authErrorMessage(DioException e) {
+    final response = e.response;
+    if (response == null) return 'No se puede conectar con el servidor';
+    final detail = response.data is Map ? response.data['detail'] : null;
+    if (detail is String) return detail;
+    if (response.statusCode == 422) {
+      return 'Revisa el email y usa una contraseña de al menos 8 caracteres';
+    }
+    return 'Error inesperado (${response.statusCode})';
   }
 
   Future<List<Signal>> getSignals({
@@ -67,6 +129,14 @@ class ApiClient {
     final hits = response.data as List;
     return hits.map((j) => Transaction.fromJson(j)).toList();
   }
+}
+
+class AuthException implements Exception {
+  final String message;
+  AuthException(this.message);
+
+  @override
+  String toString() => message;
 }
 
 // ─── Modelos ──────────────────────────────────────────────────────────────────

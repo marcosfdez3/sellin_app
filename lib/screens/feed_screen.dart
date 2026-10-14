@@ -6,6 +6,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../services/providers.dart';
 import '../services/api_client.dart';
+import '../services/auth.dart';
 
 class FeedScreen extends ConsumerWidget {
   const FeedScreen({super.key});
@@ -25,6 +26,11 @@ class FeedScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             onPressed: () => ref.invalidate(signalsProvider),
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout_rounded),
+            tooltip: 'Cerrar sesión',
+            onPressed: () => ref.read(authProvider).logout(),
           ),
         ],
       ),
