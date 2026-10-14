@@ -41,5 +41,14 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/sellin_logo.png" 
+  image_path: "assets/images/sellin_logo.png"
+
+flutter_native_splash:
+  color: "#000000"
+  image: assets/images/sellin.png
+  android_12:
+    # Android 12+ recorta el icono en un círculo dentro de un cuadrado:
+    # la imagen debe ser cuadrada y con margen para no deformarse.
+    color: "#000000"
+    image: assets/images/sellin_splash_android12.png
 
