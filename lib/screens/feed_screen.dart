@@ -102,6 +102,14 @@ class _FilterBar extends ConsumerWidget {
             onTap: () => ref.read(signalFilterProvider.notifier).state =
                 filter.copyWith(clusterOnly: !filter.clusterOnly),
           ),
+          const SizedBox(width: 8),
+          _Chip(
+            label: '🏆 Top',
+            selected: filter.sortByScore,
+            color: const Color(0xFF9B8CFF),
+            onTap: () => ref.read(signalFilterProvider.notifier).state =
+                filter.copyWith(sortByScore: !filter.sortByScore),
+          ),
         ],
       ),
     );

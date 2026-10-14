@@ -91,12 +91,14 @@ class ApiClient {
     String? signalType,
     String? strength,
     bool clusterOnly = false,
+    bool sortByScore = false,
     int page = 1,
     int pageSize = 20,
   }) async {
     final params = <String, dynamic>{
       'page': page,
       'page_size': pageSize,
+      'sort': sortByScore ? 'score' : 'recent',
       if (signalType != null) 'signal_type': signalType,
       if (strength != null) 'strength': strength,
       if (clusterOnly) 'cluster_only': true,
