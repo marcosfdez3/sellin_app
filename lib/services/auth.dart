@@ -11,9 +11,12 @@ class AuthController extends ChangeNotifier {
   static const _tokenKey = 'auth_token';
 
   /// ID de cliente OAuth "Aplicación web" de Google Cloud (el mismo que
-  /// GOOGLE_CLIENT_ID del backend). Se pasa con:
+  /// GOOGLE_CLIENT_ID del backend). No es secreto. Se puede cambiar con:
   ///   --dart-define=GOOGLE_SERVER_CLIENT_ID=xxxx.apps.googleusercontent.com
-  static const _googleServerClientId = String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID');
+  static const _googleServerClientId = String.fromEnvironment(
+    'GOOGLE_SERVER_CLIENT_ID',
+    defaultValue: '183487656266-5mkosjvfkrt96p4qbpsfn2qlkp1ac5q3.apps.googleusercontent.com',
+  );
 
   static bool get googleSignInEnabled => _googleServerClientId.isNotEmpty;
 
