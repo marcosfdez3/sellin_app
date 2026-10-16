@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'screens/feed_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/top_screen.dart';
 import 'screens/transactions_screen.dart';
 import 'screens/signal_detail_screen.dart';
 import 'services/api_client.dart';
@@ -40,6 +41,10 @@ GoRouter _buildRouter(AuthController auth) => GoRouter(
       routes: [
         GoRoute(
           path: '/',
+          builder: (context, state) => const TopScreen(),
+        ),
+        GoRoute(
+          path: '/signals',
           builder: (context, state) => const FeedScreen(),
         ),
         GoRoute(
@@ -101,35 +106,30 @@ class InsiderTrackApp extends StatelessWidget {
   }
 }
 
-class MainShell extends StatefulWidget {
+class MainShell extends StatelessWidget {
   final Widget child;
   const MainShell({super.key, required this.child});
 
-  @override
-  State<MainShell> createState() => _MainShellState();
-}
-
-class _MainShellState extends State<MainShell> {
-  int _selectedIndex = 0;
+  // Rutas de cada pestaña, en el mismo orden que la barra de navegación
+  static const _tabs = ['/', '/signals', '/transactions'];
 
   @override
   Widget build(BuildContext context) {
+    final location = GoRouterState.of(context).matchedLocation;
+    final selectedIndex = _tabs.indexOf(location).clamp(0, _tabs.length - 1);
+
     return Scaffold(
-      body: widget.child,
+      body: child,
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
+        selectedIndex: selectedIndex,
         backgroundColor: const Color(0xFF16213E),
         indicatorColor: const Color(0xFF00D4AA).withOpacity(0.2),
-        onDestinationSelected: (index) {
-          setState(() => _selectedIndex = index);
-          switch (index) {
-            case 0:
-              context.go('/');
-            case 1:
-              context.go('/transactions');
-          }
-        },
+        onDestinationSelected: (index) => context.go(_tabs[index]),
         destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.emoji_events_rounded),
+            label: 'Top',
+          ),
           NavigationDestination(
             icon: Icon(Icons.trending_up_rounded),
             label: 'Señales',

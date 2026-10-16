@@ -92,6 +92,7 @@ class ApiClient {
     String? strength,
     bool clusterOnly = false,
     bool sortByScore = false,
+    int? days,
     int page = 1,
     int pageSize = 20,
   }) async {
@@ -102,6 +103,7 @@ class ApiClient {
       if (signalType != null) 'signal_type': signalType,
       if (strength != null) 'strength': strength,
       if (clusterOnly) 'cluster_only': true,
+      if (days != null) 'days': days,
     };
 
     final response = await _dio.get('/signals', queryParameters: params);

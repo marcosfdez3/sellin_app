@@ -19,27 +19,19 @@ void _autoRefresh(Ref ref) {
 class SignalFilter {
   final String? signalType;  // 'buy' o 'sell' (null = todos)
   final String? strength;
-  final bool clusterOnly;
-  final bool sortByScore;  // false = más recientes primero
 
   const SignalFilter({
     this.signalType = 'buy',
     this.strength,
-    this.clusterOnly = false,
-    this.sortByScore = false,
   });
 
   SignalFilter copyWith({
     Object? signalType = _sentinel,
     Object? strength = _sentinel,
-    bool? clusterOnly,
-    bool? sortByScore,
   }) {
     return SignalFilter(
       signalType: signalType == _sentinel ? this.signalType : signalType as String?,
       strength: strength == _sentinel ? this.strength : strength as String?,
-      clusterOnly: clusterOnly ?? this.clusterOnly,
-      sortByScore: sortByScore ?? this.sortByScore,
     );
   }
 }
@@ -60,8 +52,24 @@ final signalsProvider = FutureProvider.autoDispose<List<Signal>>((ref) async {
   return client.getSignals(
     signalType: filter.signalType,
     strength: filter.strength,
-    clusterOnly: filter.clusterOnly,
-    sortByScore: filter.sortByScore,
+  );
+});
+
+// ─── Top de la semana ─────────────────────────────────────────────────────────
+
+/// Días que cuenta el apartado Top.
+const kTopDays = 7;
+
+/// Las 3 señales con mejor puntuación de la semana para 'buy' o 'sell'.
+final topSignalsProvider = FutureProvider.autoDispose
+    .family<List<Signal>, String>((ref, signalType) async {
+  final client = ref.watch(apiClientProvider);
+  _autoRefresh(ref);
+  return client.getSignals(
+    signalType: signalType,
+    sortByScore: true,
+    days: kTopDays,
+    pageSize: 3,
   );
 });
 
