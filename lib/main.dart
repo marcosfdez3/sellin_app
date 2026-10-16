@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import 'screens/feed_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/following_screen.dart';
 import 'screens/top_screen.dart';
-import 'screens/transactions_screen.dart';
 import 'screens/signal_detail_screen.dart';
 import 'services/api_client.dart';
 import 'services/auth.dart';
@@ -48,8 +48,8 @@ GoRouter _buildRouter(AuthController auth) => GoRouter(
           builder: (context, state) => const FeedScreen(),
         ),
         GoRoute(
-          path: '/transactions',
-          builder: (context, state) => const TransactionsScreen(),
+          path: '/following',
+          builder: (context, state) => const FollowingScreen(),
         ),
       ],
     ),
@@ -111,7 +111,7 @@ class MainShell extends StatelessWidget {
   const MainShell({super.key, required this.child});
 
   // Rutas de cada pestaña, en el mismo orden que la barra de navegación
-  static const _tabs = ['/', '/signals', '/transactions'];
+  static const _tabs = ['/', '/signals', '/following'];
 
   @override
   Widget build(BuildContext context) {
@@ -135,8 +135,8 @@ class MainShell extends StatelessWidget {
             label: 'Señales',
           ),
           NavigationDestination(
-            icon: Icon(Icons.receipt_long_rounded),
-            label: 'Transacciones',
+            icon: Icon(Icons.star_rounded),
+            label: 'Siguiendo',
           ),
         ],
       ),

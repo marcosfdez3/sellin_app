@@ -112,27 +112,23 @@ class ApiClient {
     return hits.map((j) => Signal.fromJson(j)).toList();
   }
 
-  Future<List<Transaction>> getTransactions({
-    String? ticker,
-    String? transactionType,
-    int limit = 50,
-  }) async {
-    final params = <String, dynamic>{
-      'limit': limit,
-      if (ticker != null) 'ticker': ticker,
-      if (transactionType != null) 'transaction_type': transactionType,
-    };
-
-    final response = await _dio.get('/transactions', queryParameters: params);
-    final hits = response.data as List;
-    return hits.map((j) => Transaction.fromJson(j)).toList();
-  }
-
   Future<List<Transaction>> getCompanyTransactions(String ticker) async {
     final response = await _dio.get('/companies/$ticker/transactions');
     final hits = response.data as List;
     return hits.map((j) => Transaction.fromJson(j)).toList();
   }
+
+  // ─── Siguiendo ───────────────────────────────────────────────────────────────
+
+  Future<List<Follow>> getFollows() async {
+    final response = await _dio.get('/follows/');
+    final hits = response.data as List;
+    return hits.map((j) => Follow.fromJson(j)).toList();
+  }
+
+  Future<void> follow(int companyId) => _dio.put('/follows/$companyId');
+
+  Future<void> unfollow(int companyId) => _dio.delete('/follows/$companyId');
 }
 
 class AuthException implements Exception {
@@ -206,6 +202,21 @@ class Signal {
       );
 
   bool get isBuy => signalType == 'buy';
+}
+
+/// Empresa que sigue el usuario, con su señal más reciente (si tiene).
+class Follow {
+  final Company company;
+  final DateTime followedAt;
+  final Signal? latestSignal;
+
+  Follow({required this.company, required this.followedAt, this.latestSignal});
+
+  factory Follow.fromJson(Map<String, dynamic> j) => Follow(
+        company: Company.fromJson(j['company']),
+        followedAt: DateTime.parse(j['followed_at']),
+        latestSignal: j['latest_signal'] != null ? Signal.fromJson(j['latest_signal']) : null,
+      );
 }
 
 class Transaction {

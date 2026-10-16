@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../services/api_client.dart';
+import '../services/providers.dart';
 
 // ─── Tarjeta de señal ─────────────────────────────────────────────────────────
 
@@ -67,6 +69,8 @@ class SignalCard extends StatelessWidget {
                     ),
                   ),
                 const Spacer(),
+                FollowButton(company: signal.company),
+                const SizedBox(width: 4),
                 // Score
                 ScoreBadge(score: signal.score, color: color),
               ],
@@ -151,6 +155,36 @@ class ScoreBadge extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Estrella para seguir / dejar de seguir una empresa.
+class FollowButton extends ConsumerWidget {
+  final Company company;
+  const FollowButton({super.key, required this.company});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final following = ref.watch(followedCompanyIdsProvider).contains(company.id);
+
+    return IconButton(
+      visualDensity: VisualDensity.compact,
+      tooltip: following ? 'Dejar de seguir' : 'Seguir',
+      icon: Icon(
+        following ? Icons.star_rounded : Icons.star_border_rounded,
+        color: following ? const Color(0xFFFFD93D) : Colors.white38,
+      ),
+      onPressed: () async {
+        try {
+          await ref.read(followsProvider.notifier).toggle(company);
+        } catch (_) {
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No se pudo guardar. Inténtalo de nuevo.')),
+          );
+        }
+      },
     );
   }
 }
