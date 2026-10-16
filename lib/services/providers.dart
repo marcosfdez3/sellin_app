@@ -17,13 +17,13 @@ void _autoRefresh(Ref ref) {
 // ─── Filtros del feed ─────────────────────────────────────────────────────────
 
 class SignalFilter {
-  final String? signalType;  // null = todos, 'buy', 'sell'
+  final String? signalType;  // 'buy' o 'sell' (null = todos)
   final String? strength;
   final bool clusterOnly;
   final bool sortByScore;  // false = más recientes primero
 
   const SignalFilter({
-    this.signalType,
+    this.signalType = 'buy',
     this.strength,
     this.clusterOnly = false,
     this.sortByScore = false,
