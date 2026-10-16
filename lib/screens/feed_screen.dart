@@ -6,6 +6,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../services/providers.dart';
 import '../services/api_client.dart';
+import '../services/auth.dart';
 
 class FeedScreen extends ConsumerWidget {
   const FeedScreen({super.key});
@@ -25,6 +26,11 @@ class FeedScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             onPressed: () => ref.invalidate(signalsProvider),
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout_rounded),
+            tooltip: 'Cerrar sesión',
+            onPressed: () => ref.read(authProvider).logout(),
           ),
         ],
       ),
@@ -95,6 +101,14 @@ class _FilterBar extends ConsumerWidget {
             color: const Color(0xFFFFD93D),
             onTap: () => ref.read(signalFilterProvider.notifier).state =
                 filter.copyWith(clusterOnly: !filter.clusterOnly),
+          ),
+          const SizedBox(width: 8),
+          _Chip(
+            label: '🏆 Top',
+            selected: filter.sortByScore,
+            color: const Color(0xFF9B8CFF),
+            onTap: () => ref.read(signalFilterProvider.notifier).state =
+                filter.copyWith(sortByScore: !filter.sortByScore),
           ),
         ],
       ),

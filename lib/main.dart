@@ -3,16 +3,38 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'screens/feed_screen.dart';
+import 'screens/login_screen.dart';
 import 'screens/transactions_screen.dart';
 import 'screens/signal_detail_screen.dart';
 import 'services/api_client.dart';
+import 'services/auth.dart';
 
-void main() {
-  runApp(const ProviderScope(child: InsiderTrackApp()));
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Recupera la sesión guardada antes de decidir la primera pantalla
+  final auth = AuthController(ApiClient());
+  await auth.load();
+
+  runApp(ProviderScope(
+    overrides: [authProvider.overrideWith((ref) => auth)],
+    child: InsiderTrackApp(router: _buildRouter(auth)),
+  ));
 }
 
-final _router = GoRouter(
+GoRouter _buildRouter(AuthController auth) => GoRouter(
+  refreshListenable: auth,
+  redirect: (context, state) {
+    final onLogin = state.matchedLocation == '/login';
+    if (!auth.isLoggedIn) return onLogin ? null : '/login';
+    if (onLogin) return '/';
+    return null;
+  },
   routes: [
+    GoRoute(
+      path: '/login',
+      builder: (context, state) => const LoginScreen(),
+    ),
     ShellRoute(
       builder: (context, state, child) => MainShell(child: child),
       routes: [
@@ -37,7 +59,8 @@ final _router = GoRouter(
 );
 
 class InsiderTrackApp extends StatelessWidget {
-  const InsiderTrackApp({super.key});
+  final GoRouter router;
+  const InsiderTrackApp({super.key, required this.router});
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +68,7 @@ class InsiderTrackApp extends StatelessWidget {
       title: 'InsiderTrack',
       debugShowCheckedModeBanner: false,
       theme: _buildTheme(),
-      routerConfig: _router,
+      routerConfig: router,
     );
   }
 
