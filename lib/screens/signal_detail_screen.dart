@@ -307,7 +307,7 @@ class _TxRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(tx.insiderRole,
+                Text(kRoleLabels[tx.insiderRole] ?? tx.insiderRole,
                     style: const TextStyle(color: Colors.white, fontSize: 13)),
                 Text(
                   DateFormat('dd MMM yyyy', 'es_ES').format(tx.transactionDate),

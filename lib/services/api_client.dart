@@ -219,6 +219,11 @@ class Follow {
       );
 }
 
+/// Cómo se muestra cada rol de insider (los que no están aquí salen tal cual).
+const kRoleLabels = {
+  'major_shareholder': 'Accionista mayoritario',
+};
+
 class Transaction {
   final int id;
   final Company company;
