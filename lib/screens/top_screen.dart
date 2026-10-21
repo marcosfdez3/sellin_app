@@ -6,16 +6,24 @@ import '../services/auth.dart';
 import '../services/providers.dart';
 import '../widgets/signal_card.dart';
 
-/// Pantalla principal: las 3 mejores compras y las 3 mejores ventas de la semana.
+/// Lado que se muestra en el Top: 'buy' (compras) o 'sell' (ventas).
+/// Se mantiene al cambiar de pestaña mientras la app está abierta.
+final _topTypeProvider = StateProvider<String>((ref) => 'buy');
+
+const _topTitles = {
+  'buy': '🟢 Mejores compras de la semana',
+  'sell': '🔴 Mejores ventas de la semana',
+};
+
+/// Pantalla principal: las 3 mejores compras o ventas de la semana,
+/// con un desplegable para cambiar de una a otra.
 class TopScreen extends ConsumerWidget {
   const TopScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    void refresh() {
-      ref.invalidate(topSignalsProvider('buy'));
-      ref.invalidate(topSignalsProvider('sell'));
-    }
+    final type = ref.watch(_topTypeProvider);
+    void refresh() => ref.invalidate(topSignalsProvider(type));
 
     return Scaffold(
       appBar: AppBar(
@@ -41,16 +49,12 @@ class TopScreen extends ConsumerWidget {
           padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.paddingOf(context).bottom),
           children: [
             _TopSection(
-              title: '🟢 Mejores compras de la semana',
-              emptyText: 'Sin compras esta semana',
-              signals: ref.watch(topSignalsProvider('buy')),
-              onRetry: refresh,
-            ),
-            const SizedBox(height: 24),
-            _TopSection(
-              title: '🔴 Mejores ventas de la semana',
-              emptyText: 'Sin ventas esta semana',
-              signals: ref.watch(topSignalsProvider('sell')),
+              header: _TypeDropdown(
+                value: type,
+                onChanged: (t) => ref.read(_topTypeProvider.notifier).state = t,
+              ),
+              emptyText: type == 'buy' ? 'Sin compras esta semana' : 'Sin ventas esta semana',
+              signals: ref.watch(topSignalsProvider(type)),
               onRetry: refresh,
             ),
           ],
@@ -60,14 +64,62 @@ class TopScreen extends ConsumerWidget {
   }
 }
 
+/// Título del Top con una flecha: al pulsarlo deja elegir compras o ventas.
+class _TypeDropdown extends StatelessWidget {
+  final String value;
+  final ValueChanged<String> onChanged;
+  const _TypeDropdown({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      initialValue: value,
+      onSelected: onChanged,
+      color: const Color(0xFF1E1E1E),
+      position: PopupMenuPosition.under,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      itemBuilder: (context) => [
+        for (final entry in _topTitles.entries)
+          PopupMenuItem(
+            value: entry.key,
+            child: Row(
+              children: [
+                Expanded(child: Text(entry.value)),
+                if (entry.key == value)
+                  const Icon(Icons.check_rounded, size: 18, color: Color(0xFF00D4AA)),
+              ],
+            ),
+          ),
+      ],
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: Text(
+              _topTitles[value]!,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white70),
+        ],
+      ),
+    );
+  }
+}
+
 class _TopSection extends StatelessWidget {
-  final String title;
+  final Widget header;
   final String emptyText;
   final AsyncValue<List<Signal>> signals;
   final VoidCallback onRetry;
 
   const _TopSection({
-    required this.title,
+    required this.header,
     required this.emptyText,
     required this.signals,
     required this.onRetry,
@@ -80,14 +132,7 @@ class _TopSection extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          child: Align(alignment: Alignment.centerLeft, child: header),
         ),
         signals.when(
           loading: () => const Padding(

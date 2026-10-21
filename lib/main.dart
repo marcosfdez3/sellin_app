@@ -156,53 +156,57 @@ class _MainShellState extends State<MainShell> {
             ? SafeArea(
                 top: false,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(28),
-                    // El margen del sistema ya lo pone el SafeArea de fuera;
-                    // sin esto la barra lo añadiría también dentro de la píldora
-                    child: MediaQuery.removePadding(
-                      context: context,
-                      removeBottom: true,
-                      child: NavigationBarTheme(
-                        data: NavigationBarThemeData(
-                          iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
-                                size: 26,
-                                color: states.contains(WidgetState.selected)
-                                    ? const Color(0xFF00D4AA)
-                                    : Colors.white38,
-                              )),
-                        ),
-                        child: NavigationBar(
-                          selectedIndex: selectedIndex,
-                          height: 56,
-                          backgroundColor: const Color(0xFF1E1E1E),
-                          surfaceTintColor: Colors.transparent,
-                          elevation: 0,
-                          indicatorColor: Colors.transparent,
-                          labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
-                          onDestinationSelected: (index) => context.go(_tabs[index]),
-                          destinations: const [
-                            NavigationDestination(
-                              icon: Icon(Icons.emoji_events_rounded),
-                              label: 'Top',
-                            ),
-                            NavigationDestination(
-                              icon: Icon(Icons.trending_up_rounded),
-                              label: 'Señales',
-                            ),
-                            NavigationDestination(
-                              icon: Icon(Icons.star_rounded),
-                              label: 'Siguiendo',
-                            ),
-                          ],
-                        ),
-                      ),
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Center(
+                    heightFactor: 1,
+                    child: _NavPill(
+                      selectedIndex: selectedIndex,
+                      onSelected: (index) => context.go(_tabs[index]),
                     ),
                   ),
                 ),
               )
             : const SizedBox(width: double.infinity),
+      ),
+    );
+  }
+}
+
+/// Barra de navegación compacta: una píldora gris oscuro, centrada y solo con iconos.
+class _NavPill extends StatelessWidget {
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+  const _NavPill({required this.selectedIndex, required this.onSelected});
+
+  static const _items = [
+    (icon: Icons.emoji_events_rounded, label: 'Top'),
+    (icon: Icons.trending_up_rounded, label: 'Señales'),
+    (icon: Icons.star_rounded, label: 'Siguiendo'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final (i, item) in _items.indexed)
+            IconButton(
+              tooltip: item.label,
+              iconSize: 24,
+              onPressed: () => onSelected(i),
+              icon: Icon(
+                item.icon,
+                color: i == selectedIndex ? const Color(0xFF00D4AA) : Colors.white38,
+              ),
+            ),
+        ],
       ),
     );
   }
