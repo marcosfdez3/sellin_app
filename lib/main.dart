@@ -188,7 +188,7 @@ class _NavPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(24),
@@ -196,7 +196,8 @@ class _NavPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (final (i, item) in _items.indexed)
+          for (final (i, item) in _items.indexed) ...[
+            if (i > 0) const SizedBox(width: 16),
             IconButton(
               tooltip: item.label,
               iconSize: 24,
@@ -206,6 +207,7 @@ class _NavPill extends StatelessWidget {
                 color: i == selectedIndex ? const Color(0xFF00D4AA) : Colors.white38,
               ),
             ),
+          ],
         ],
       ),
     );

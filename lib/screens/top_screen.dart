@@ -11,8 +11,8 @@ import '../widgets/signal_card.dart';
 final _topTypeProvider = StateProvider<String>((ref) => 'buy');
 
 const _topTitles = {
-  'buy': '🟢 Mejores compras de la semana',
-  'sell': '🔴 Mejores ventas de la semana',
+  'buy': 'Mejores compras de la semana',
+  'sell': 'Mejores ventas de la semana',
 };
 
 /// Pantalla principal: las 3 mejores compras o ventas de la semana,
@@ -77,17 +77,26 @@ class _TypeDropdown extends StatelessWidget {
       onSelected: onChanged,
       color: const Color(0xFF1E1E1E),
       position: PopupMenuPosition.under,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      clipBehavior: Clip.antiAlias,
       itemBuilder: (context) => [
         for (final entry in _topTitles.entries)
           PopupMenuItem(
             value: entry.key,
-            child: Row(
-              children: [
-                Expanded(child: Text(entry.value)),
-                if (entry.key == value)
-                  const Icon(Icons.check_rounded, size: 18, color: Color(0xFF00D4AA)),
-              ],
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: entry.key == value ? Colors.white10 : null,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  Expanded(child: Text(entry.value)),
+                  if (entry.key == value)
+                    const Icon(Icons.check_rounded, size: 18, color: Color(0xFF00D4AA)),
+                ],
+              ),
             ),
           ),
       ],
