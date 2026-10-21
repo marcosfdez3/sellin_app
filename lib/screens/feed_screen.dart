@@ -67,7 +67,7 @@ class _BuySellBar extends ConsumerWidget {
         ref.read(signalFilterProvider.notifier).state = filter.copyWith(signalType: type);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      padding: EdgeInsets.fromLTRB(16, 8, 16, 12 + MediaQuery.paddingOf(context).bottom),
       decoration: const BoxDecoration(
         border: Border(top: BorderSide(color: Colors.white12)),
       ),

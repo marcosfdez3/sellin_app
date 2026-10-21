@@ -48,7 +48,7 @@ class FollowingScreen extends ConsumerWidget {
             : RefreshIndicator(
                 onRefresh: () => ref.refresh(followsProvider.future),
                 child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.paddingOf(context).bottom),
                   itemCount: follows.length,
                   itemBuilder: (context, i) {
                     final follow = follows[i];

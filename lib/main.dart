@@ -142,6 +142,9 @@ class _MainShellState extends State<MainShell> {
     final selectedIndex = _tabs.indexOf(location).clamp(0, _tabs.length - 1);
 
     return Scaffold(
+      // El contenido pasa por debajo de la barra (fondo transparente).
+      // Las pantallas reciben su alto en MediaQuery.padding.bottom.
+      extendBody: true,
       body: NotificationListener<UserScrollNotification>(
         onNotification: _onScroll,
         child: widget.child,
@@ -150,25 +153,39 @@ class _MainShellState extends State<MainShell> {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
         child: _barVisible
-            ? NavigationBar(
-                selectedIndex: selectedIndex,
-                backgroundColor: const Color(0xFF16213E),
-                indicatorColor: const Color(0xFF00D4AA).withOpacity(0.2),
-                onDestinationSelected: (index) => context.go(_tabs[index]),
-                destinations: const [
-                  NavigationDestination(
-                    icon: Icon(Icons.emoji_events_rounded),
-                    label: 'Top',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.trending_up_rounded),
-                    label: 'Señales',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.star_rounded),
-                    label: 'Siguiendo',
-                  ),
-                ],
+            ? NavigationBarTheme(
+                data: NavigationBarThemeData(
+                  iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
+                        size: 26,
+                        color: states.contains(WidgetState.selected)
+                            ? const Color(0xFF00D4AA)
+                            : Colors.white38,
+                      )),
+                ),
+                child: NavigationBar(
+                  selectedIndex: selectedIndex,
+                  height: 56,
+                  backgroundColor: Colors.transparent,
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 0,
+                  indicatorColor: Colors.transparent,
+                  labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+                  onDestinationSelected: (index) => context.go(_tabs[index]),
+                  destinations: const [
+                    NavigationDestination(
+                      icon: Icon(Icons.emoji_events_rounded),
+                      label: 'Top',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.trending_up_rounded),
+                      label: 'Señales',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.star_rounded),
+                      label: 'Siguiendo',
+                    ),
+                  ],
+                ),
               )
             : const SizedBox(width: double.infinity),
       ),
