@@ -145,10 +145,10 @@ class SignalDetailScreen extends ConsumerWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _MetricCard(
-                    label: 'Cluster',
-                    value: signal.isCluster ? 'Sí ⚡' : 'No',
-                    icon: Icons.group_work_outlined,
-                    color: signal.isCluster ? const Color(0xFFFFD93D) : Colors.white38,
+                    label: 'Puntuación Sellin',
+                    value: '${signal.score.toInt()}/100',
+                    icon: Icons.speed_rounded,
+                    color: color,
                   ),
                 ),
               ],
