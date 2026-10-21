@@ -310,7 +310,7 @@ class _TxRow extends StatelessWidget {
                 Text(tx.insiderRole,
                     style: const TextStyle(color: Colors.white, fontSize: 13)),
                 Text(
-                  DateFormat('dd MMM yyyy').format(tx.transactionDate),
+                  DateFormat('dd MMM yyyy', 'es_ES').format(tx.transactionDate),
                   style: const TextStyle(color: Colors.white38, fontSize: 11),
                 ),
               ],

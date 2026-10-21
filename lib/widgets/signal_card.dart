@@ -81,7 +81,7 @@ class _SignalCardState extends State<SignalCard> {
   }
 }
 
-/// Datos que aparecen al desplegar la tarjeta.
+/// Datos que aparecen al desplegar la tarjeta: empresa, resumen, importe y fecha.
 class _SignalDetails extends StatelessWidget {
   final Signal signal;
   final Color color;
@@ -132,19 +132,6 @@ class _SignalDetails extends StatelessWidget {
                 text: _formatDate(signal.lastTransactionDate),
                 style: const TextStyle(color: Colors.white54, fontSize: 13),
               ),
-              Text(
-                'Score ${signal.score.toInt()}',
-                style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13),
-              ),
-              if (signal.isCluster)
-                const Text(
-                  'CLUSTER',
-                  style: TextStyle(
-                    color: Color(0xFFFFD93D),
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
             ],
           ),
           Align(

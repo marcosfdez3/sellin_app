@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'screens/feed_screen.dart';
 import 'screens/login_screen.dart';
@@ -13,6 +14,8 @@ import 'services/auth.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Nombres de meses en español para las fechas (DateFormat con 'es_ES')
+  await initializeDateFormatting('es_ES');
 
   // Recupera la sesión guardada antes de decidir la primera pantalla
   final auth = AuthController(ApiClient());
