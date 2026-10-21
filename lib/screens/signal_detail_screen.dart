@@ -49,45 +49,27 @@ class SignalDetailScreen extends ConsumerWidget {
                         size: 32,
                       ),
                       const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            isBuy ? 'SEÑAL DE COMPRA' : 'SEÑAL DE VENTA',
-                            style: TextStyle(
-                              color: color,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                              letterSpacing: 1.2,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isBuy ? 'SEÑAL DE COMPRA' : 'SEÑAL DE VENTA',
+                              style: TextStyle(
+                                color: color,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                letterSpacing: 1.2,
+                              ),
                             ),
-                          ),
-                          Text(
-                            signal.company.name,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 13,
+                            Text(
+                              signal.company.name,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 13,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                      // Score grande
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: color, width: 2.5),
-                        ),
-                        child: Center(
-                          child: Text(
-                            signal.score.toInt().toString(),
-                            style: TextStyle(
-                              color: color,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                            ),
-                          ),
+                          ],
                         ),
                       ),
                     ],
