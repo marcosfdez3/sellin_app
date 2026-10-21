@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -93,7 +94,10 @@ class InsiderTrackApp extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF0F0F23),
+        backgroundColor: Colors.black,
+        // Sin el tinte que Material 3 añade al desplazar contenido por debajo
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
@@ -106,12 +110,31 @@ class InsiderTrackApp extends StatelessWidget {
   }
 }
 
-class MainShell extends StatelessWidget {
+class MainShell extends StatefulWidget {
   final Widget child;
   const MainShell({super.key, required this.child});
 
+  @override
+  State<MainShell> createState() => _MainShellState();
+}
+
+class _MainShellState extends State<MainShell> {
   // Rutas de cada pestaña, en el mismo orden que la barra de navegación
   static const _tabs = ['/', '/signals', '/following'];
+
+  /// La barra de abajo se esconde al bajar y vuelve a salir al subir.
+  bool _barVisible = true;
+
+  bool _onScroll(UserScrollNotification notification) {
+    if (notification.metrics.axis != Axis.vertical) return false;
+    final visible = switch (notification.direction) {
+      ScrollDirection.reverse => false, // bajando
+      ScrollDirection.forward => true,  // subiendo
+      ScrollDirection.idle => _barVisible,
+    };
+    if (visible != _barVisible) setState(() => _barVisible = visible);
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,26 +142,35 @@ class MainShell extends StatelessWidget {
     final selectedIndex = _tabs.indexOf(location).clamp(0, _tabs.length - 1);
 
     return Scaffold(
-      body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: selectedIndex,
-        backgroundColor: const Color(0xFF16213E),
-        indicatorColor: const Color(0xFF00D4AA).withOpacity(0.2),
-        onDestinationSelected: (index) => context.go(_tabs[index]),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.emoji_events_rounded),
-            label: 'Top',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.trending_up_rounded),
-            label: 'Señales',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.star_rounded),
-            label: 'Siguiendo',
-          ),
-        ],
+      body: NotificationListener<UserScrollNotification>(
+        onNotification: _onScroll,
+        child: widget.child,
+      ),
+      bottomNavigationBar: AnimatedSize(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        child: _barVisible
+            ? NavigationBar(
+                selectedIndex: selectedIndex,
+                backgroundColor: const Color(0xFF16213E),
+                indicatorColor: const Color(0xFF00D4AA).withOpacity(0.2),
+                onDestinationSelected: (index) => context.go(_tabs[index]),
+                destinations: const [
+                  NavigationDestination(
+                    icon: Icon(Icons.emoji_events_rounded),
+                    label: 'Top',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.trending_up_rounded),
+                    label: 'Señales',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.star_rounded),
+                    label: 'Siguiendo',
+                  ),
+                ],
+              )
+            : const SizedBox(width: double.infinity),
       ),
     );
   }
