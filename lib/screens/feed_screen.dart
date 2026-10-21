@@ -42,7 +42,7 @@ class FeedScreen extends ConsumerWidget {
                       child: ListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: signals.length,
-                        itemBuilder: (context, i) => SignalCard(signal: signals[i]),
+                        itemBuilder: (context, i) => SignalCard(key: ValueKey(signals[i].id), signal: signals[i]),
                       ),
                     ),
             ),

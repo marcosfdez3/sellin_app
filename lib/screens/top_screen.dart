@@ -155,7 +155,7 @@ class _TopSection extends StatelessWidget {
           data: (list) => list.isEmpty
               ? _Message(text: emptyText)
               : Column(
-                  children: [for (final s in list) SignalCard(signal: s)],
+                  children: [for (final s in list) SignalCard(key: ValueKey(s.id), signal: s)],
                 ),
         ),
       ],

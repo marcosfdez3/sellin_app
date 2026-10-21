@@ -54,7 +54,7 @@ class FollowingScreen extends ConsumerWidget {
                     final follow = follows[i];
                     final signal = follow.latestSignal;
                     return signal != null
-                        ? SignalCard(signal: signal)
+                        ? SignalCard(key: ValueKey(signal.id), signal: signal)
                         : _CompanyCard(company: follow.company);
                   },
                 ),
