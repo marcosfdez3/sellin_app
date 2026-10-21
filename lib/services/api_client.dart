@@ -221,7 +221,11 @@ class Follow {
 
 /// Cómo se muestra cada rol de insider (los que no están aquí salen tal cual).
 const kRoleLabels = {
+  'director': 'Director',
+  'VP': 'Vicepresidente',
+  'officer': 'Directivo',
   'major_shareholder': 'Accionista mayoritario',
+  'other': 'Insider',
 };
 
 class Transaction {
