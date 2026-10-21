@@ -142,7 +142,7 @@ class _MainShellState extends State<MainShell> {
     final selectedIndex = _tabs.indexOf(location).clamp(0, _tabs.length - 1);
 
     return Scaffold(
-      // El contenido pasa por debajo de la barra (fondo transparente).
+      // La barra flota sobre el contenido, que se ve alrededor de ella.
       // Las pantallas reciben su alto en MediaQuery.padding.bottom.
       extendBody: true,
       body: NotificationListener<UserScrollNotification>(
@@ -153,38 +153,53 @@ class _MainShellState extends State<MainShell> {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
         child: _barVisible
-            ? NavigationBarTheme(
-                data: NavigationBarThemeData(
-                  iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
-                        size: 26,
-                        color: states.contains(WidgetState.selected)
-                            ? const Color(0xFF00D4AA)
-                            : Colors.white38,
-                      )),
-                ),
-                child: NavigationBar(
-                  selectedIndex: selectedIndex,
-                  height: 56,
-                  backgroundColor: Colors.transparent,
-                  surfaceTintColor: Colors.transparent,
-                  elevation: 0,
-                  indicatorColor: Colors.transparent,
-                  labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
-                  onDestinationSelected: (index) => context.go(_tabs[index]),
-                  destinations: const [
-                    NavigationDestination(
-                      icon: Icon(Icons.emoji_events_rounded),
-                      label: 'Top',
+            ? SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(28),
+                    // El margen del sistema ya lo pone el SafeArea de fuera;
+                    // sin esto la barra lo añadiría también dentro de la píldora
+                    child: MediaQuery.removePadding(
+                      context: context,
+                      removeBottom: true,
+                      child: NavigationBarTheme(
+                        data: NavigationBarThemeData(
+                          iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
+                                size: 26,
+                                color: states.contains(WidgetState.selected)
+                                    ? const Color(0xFF00D4AA)
+                                    : Colors.white38,
+                              )),
+                        ),
+                        child: NavigationBar(
+                          selectedIndex: selectedIndex,
+                          height: 56,
+                          backgroundColor: const Color(0xFF1E1E1E),
+                          surfaceTintColor: Colors.transparent,
+                          elevation: 0,
+                          indicatorColor: Colors.transparent,
+                          labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+                          onDestinationSelected: (index) => context.go(_tabs[index]),
+                          destinations: const [
+                            NavigationDestination(
+                              icon: Icon(Icons.emoji_events_rounded),
+                              label: 'Top',
+                            ),
+                            NavigationDestination(
+                              icon: Icon(Icons.trending_up_rounded),
+                              label: 'Señales',
+                            ),
+                            NavigationDestination(
+                              icon: Icon(Icons.star_rounded),
+                              label: 'Siguiendo',
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    NavigationDestination(
-                      icon: Icon(Icons.trending_up_rounded),
-                      label: 'Señales',
-                    ),
-                    NavigationDestination(
-                      icon: Icon(Icons.star_rounded),
-                      label: 'Siguiendo',
-                    ),
-                  ],
+                  ),
                 ),
               )
             : const SizedBox(width: double.infinity),
