@@ -73,7 +73,7 @@ class _CompanyCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+      padding: const EdgeInsets.fromLTRB(12, 10, 4, 10),
       decoration: BoxDecoration(
         color: const Color(0xFF16213E),
         borderRadius: BorderRadius.circular(16),
@@ -81,6 +81,8 @@ class _CompanyCard extends StatelessWidget {
       ),
       child: Row(
         children: [
+          CompanyLogo(company: company),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

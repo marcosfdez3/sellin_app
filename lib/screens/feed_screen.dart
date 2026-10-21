@@ -187,8 +187,8 @@ class _ShimmerList extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           itemCount: 6,
           itemBuilder: (_, __) => Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            height: 130,
+            margin: const EdgeInsets.only(bottom: 10),
+            height: 62,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
