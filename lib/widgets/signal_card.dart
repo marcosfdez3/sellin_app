@@ -11,9 +11,12 @@ import '../services/providers.dart';
 /// Tarjeta compacta: logo de la empresa, ticker y número de insiders.
 /// Al pulsarla se despliega con el resto de datos de la señal.
 /// El borde es verde en las compras y rojo en las ventas.
+/// Con [asRow] se pinta como una fila sin borde ni fondo, para ir
+/// dentro de un bloque que agrupa varias señales.
 class SignalCard extends StatefulWidget {
   final Signal signal;
-  const SignalCard({super.key, required this.signal});
+  final bool asRow;
+  const SignalCard({super.key, required this.signal, this.asRow = false});
 
   @override
   State<SignalCard> createState() => _SignalCardState();
@@ -32,13 +35,15 @@ class _SignalCardState extends State<SignalCard> {
       behavior: HitTestBehavior.opaque,
       onTap: () => setState(() => _expanded = !_expanded),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
+        margin: widget.asRow ? EdgeInsets.zero : const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.fromLTRB(12, 10, 4, 10),
-        decoration: BoxDecoration(
-          color: const Color(0xFF16213E),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(_expanded ? 0.6 : 0.3), width: 1),
-        ),
+        decoration: widget.asRow
+            ? null
+            : BoxDecoration(
+                color: const Color(0xFF16213E),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: color.withOpacity(_expanded ? 0.6 : 0.3), width: 1),
+              ),
         child: Column(
           children: [
             Row(

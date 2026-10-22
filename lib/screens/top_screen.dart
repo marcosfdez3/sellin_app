@@ -136,29 +136,48 @@ class _TopSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Align(alignment: Alignment.centerLeft, child: header),
-        ),
-        signals.when(
-          loading: () => const Padding(
-            padding: EdgeInsets.symmetric(vertical: 32),
-            child: Center(child: CircularProgressIndicator()),
+    // Un solo bloque: título con el desplegable y las señales como filas
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: const Color(0xFF16213E),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+            child: Align(alignment: Alignment.centerLeft, child: header),
           ),
-          error: (e, _) => _Message(
-            text: 'No se pudo conectar al servidor',
-            action: TextButton(onPressed: onRetry, child: const Text('Reintentar')),
+          const Divider(height: 1, color: Colors.white12),
+          signals.when(
+            loading: () => const Padding(
+              padding: EdgeInsets.symmetric(vertical: 32),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (e, _) => _Message(
+              text: 'No se pudo conectar al servidor',
+              action: TextButton(onPressed: onRetry, child: const Text('Reintentar')),
+            ),
+            data: (list) => list.isEmpty
+                ? _Message(text: emptyText)
+                : Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Column(
+                      children: [
+                        for (final (i, s) in list.indexed) ...[
+                          if (i > 0)
+                            const Divider(height: 1, indent: 16, endIndent: 16, color: Colors.white12),
+                          SignalCard(key: ValueKey(s.id), signal: s, asRow: true),
+                        ],
+                      ],
+                    ),
+                  ),
           ),
-          data: (list) => list.isEmpty
-              ? _Message(text: emptyText)
-              : Column(
-                  children: [for (final s in list) SignalCard(key: ValueKey(s.id), signal: s)],
-                ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
