@@ -71,16 +71,12 @@ class TopScreen extends ConsumerWidget {
   }
 }
 
-/// Anima a seguir acciones con la ☆. Solo sale mientras el usuario no sigue
-/// ninguna empresa (y no mientras se cargan sus seguidos, para no parpadear).
-class _FollowHint extends ConsumerWidget {
+/// Anima a seguir acciones con la ☆ (se muestra siempre).
+class _FollowHint extends StatelessWidget {
   const _FollowHint();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final follows = ref.watch(followsProvider);
-    if (!follows.hasValue || follows.requireValue.isNotEmpty) return const SizedBox.shrink();
-
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(top: 16),
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
