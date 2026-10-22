@@ -4,9 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import 'screens/feed_screen.dart';
+import 'screens/company_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/following_screen.dart';
+import 'screens/search_screen.dart';
 import 'screens/top_screen.dart';
 import 'screens/signal_detail_screen.dart';
 import 'services/api_client.dart';
@@ -48,14 +49,21 @@ GoRouter _buildRouter(AuthController auth) => GoRouter(
           builder: (context, state) => const TopScreen(),
         ),
         GoRoute(
-          path: '/signals',
-          builder: (context, state) => const FeedScreen(),
+          path: '/search',
+          builder: (context, state) => const SearchScreen(),
         ),
         GoRoute(
           path: '/following',
           builder: (context, state) => const FollowingScreen(),
         ),
       ],
+    ),
+    GoRoute(
+      path: '/company/:cik',
+      builder: (context, state) => CompanyScreen(
+        cik: state.pathParameters['cik']!,
+        preview: state.extra as CompanyRef?,
+      ),
     ),
     GoRoute(
       path: '/signal/:id',
@@ -123,7 +131,7 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   // Rutas de cada pestaña, en el mismo orden que la barra de navegación
-  static const _tabs = ['/', '/signals', '/following'];
+  static const _tabs = ['/', '/search', '/following'];
 
   /// La barra de abajo se esconde al bajar y vuelve a salir al subir.
   bool _barVisible = true;
@@ -183,7 +191,7 @@ class _NavPill extends StatelessWidget {
 
   static const _items = [
     (icon: Icons.emoji_events_rounded, label: 'Top'),
-    (icon: Icons.trending_up_rounded, label: 'Señales'),
+    (icon: Icons.search_rounded, label: 'Buscar'),
     (icon: Icons.star_rounded, label: 'Siguiendo'),
   ];
 

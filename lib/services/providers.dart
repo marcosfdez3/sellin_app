@@ -15,45 +15,24 @@ void _autoRefresh(Ref ref) {
   ref.onDispose(timer.cancel);
 }
 
-// ─── Filtros del feed ─────────────────────────────────────────────────────────
+// ─── Empresas ─────────────────────────────────────────────────────────────────
 
-class SignalFilter {
-  final String? signalType;  // 'buy' o 'sell' (null = todos)
-  final String? strength;
+/// Resultados del buscador para un texto.
+final companySearchProvider = FutureProvider.autoDispose
+    .family<List<CompanyRef>, String>((ref, query) {
+  return ref.watch(apiClientProvider).searchCompanies(query);
+});
 
-  const SignalFilter({
-    this.signalType = 'buy',
-    this.strength,
-  });
-
-  SignalFilter copyWith({
-    Object? signalType = _sentinel,
-    Object? strength = _sentinel,
-  }) {
-    return SignalFilter(
-      signalType: signalType == _sentinel ? this.signalType : signalType as String?,
-      strength: strength == _sentinel ? this.strength : strength as String?,
-    );
-  }
-}
-
-const _sentinel = Object();
-
-final signalFilterProvider = StateProvider<SignalFilter>(
-  (ref) => const SignalFilter(),
-);
-
-// ─── Señales ──────────────────────────────────────────────────────────────────
-
-final signalsProvider = FutureProvider.autoDispose<List<Signal>>((ref) async {
-  final client = ref.watch(apiClientProvider);
-  final filter = ref.watch(signalFilterProvider);
+/// Empresas con más actividad de insiders esta semana.
+final popularCompaniesProvider = FutureProvider.autoDispose<List<CompanyActivity>>((ref) {
   _autoRefresh(ref);
+  return ref.watch(apiClientProvider).getPopularCompanies();
+});
 
-  return client.getSignals(
-    signalType: filter.signalType,
-    strength: filter.strength,
-  );
+/// Ficha de una empresa por su CIK.
+final companyOverviewProvider = FutureProvider.autoDispose
+    .family<CompanyOverview, String>((ref, cik) {
+  return ref.watch(apiClientProvider).getCompanyOverview(cik);
 });
 
 // ─── Top de la semana ─────────────────────────────────────────────────────────

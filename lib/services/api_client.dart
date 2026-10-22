@@ -128,6 +128,27 @@ class ApiClient {
 
   Future<void> follow(int companyId) => _dio.put('/follows/$companyId');
 
+  // ─── Empresas ────────────────────────────────────────────────────────────────
+
+  /// Busca entre todas las empresas cotizadas (por ticker o nombre).
+  Future<List<CompanyRef>> searchCompanies(String query) async {
+    final response = await _dio.get('/companies/search', queryParameters: {'q': query});
+    final hits = response.data as List;
+    return hits.map((j) => CompanyRef.fromJson(j)).toList();
+  }
+
+  /// Empresas con más actividad de insiders en los últimos 7 días.
+  Future<List<CompanyActivity>> getPopularCompanies() async {
+    final response = await _dio.get('/companies/popular');
+    final hits = response.data as List;
+    return hits.map((j) => CompanyActivity.fromJson(j)).toList();
+  }
+
+  Future<CompanyOverview> getCompanyOverview(String cik) async {
+    final response = await _dio.get('/companies/by-cik/$cik');
+    return CompanyOverview.fromJson(response.data);
+  }
+
   // ─── Grandes inversores ──────────────────────────────────────────────────────
 
   Future<List<InvestorMove>> getInvestorMoves({int limit = 30}) async {
@@ -162,6 +183,63 @@ class Company {
         cik: j['cik'],
         ticker: j['ticker'],
         name: j['name'],
+      );
+}
+
+/// Resultado del buscador: puede ser una empresa que aún no está en la BD (id null).
+class CompanyRef {
+  final int? id;
+  final String cik;
+  final String? ticker;
+  final String name;
+
+  CompanyRef({this.id, required this.cik, this.ticker, required this.name});
+
+  factory CompanyRef.fromJson(Map<String, dynamic> j) => CompanyRef(
+        id: j['id'],
+        cik: j['cik'],
+        ticker: j['ticker'],
+        name: j['name'],
+      );
+}
+
+/// Empresa con su actividad de insiders reciente (acciones populares).
+class CompanyActivity {
+  final Company company;
+  final int numTransactions;
+  final int numInsiders;
+  final double buyValue;
+  final double sellValue;
+
+  CompanyActivity({
+    required this.company,
+    required this.numTransactions,
+    required this.numInsiders,
+    required this.buyValue,
+    required this.sellValue,
+  });
+
+  factory CompanyActivity.fromJson(Map<String, dynamic> j) => CompanyActivity(
+        company: Company.fromJson(j['company']),
+        numTransactions: j['num_transactions'],
+        numInsiders: j['num_insiders'],
+        buyValue: (j['buy_value'] as num).toDouble(),
+        sellValue: (j['sell_value'] as num).toDouble(),
+      );
+}
+
+/// Ficha de una empresa: sus señales recientes y últimas transacciones.
+class CompanyOverview {
+  final Company company;
+  final List<Signal> signals;
+  final List<Transaction> transactions;
+
+  CompanyOverview({required this.company, required this.signals, required this.transactions});
+
+  factory CompanyOverview.fromJson(Map<String, dynamic> j) => CompanyOverview(
+        company: Company.fromJson(j['company']),
+        signals: (j['signals'] as List).map((s) => Signal.fromJson(s)).toList(),
+        transactions: (j['transactions'] as List).map((t) => Transaction.fromJson(t)).toList(),
       );
 }
 
@@ -271,6 +349,7 @@ class Transaction {
   final Company company;
   final String transactionType;
   final String insiderRole;
+  final String? insiderName;
   final double shares;
   final double? pricePerShare;
   final double? totalValue;
@@ -282,6 +361,7 @@ class Transaction {
     required this.company,
     required this.transactionType,
     required this.insiderRole,
+    this.insiderName,
     required this.shares,
     this.pricePerShare,
     this.totalValue,
@@ -294,6 +374,7 @@ class Transaction {
         company: Company.fromJson(j['company']),
         transactionType: j['transaction_type'],
         insiderRole: j['insider_role'],
+        insiderName: j['insider']?['name'],
         shares: (j['shares'] as num).toDouble(),
         pricePerShare: j['price_per_share'] != null
             ? (j['price_per_share'] as num).toDouble()

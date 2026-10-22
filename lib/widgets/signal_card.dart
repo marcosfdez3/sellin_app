@@ -48,7 +48,7 @@ class _SignalCardState extends State<SignalCard> {
           children: [
             Row(
               children: [
-                CompanyLogo(company: signal.company),
+                CompanyLogo(ticker: signal.company.ticker, name: signal.company.name),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -185,16 +185,17 @@ class _IconText extends StatelessWidget {
 /// Logo de la empresa (Financial Modeling Prep) sobre un círculo blanco.
 /// Si no hay logo para ese ticker, muestra su inicial.
 class CompanyLogo extends StatelessWidget {
-  final Company company;
+  final String? ticker;
+  final String name;
   final double size;
-  const CompanyLogo({super.key, required this.company, this.size = 40});
+  const CompanyLogo({super.key, required this.ticker, required this.name, this.size = 40});
 
   @override
   Widget build(BuildContext context) {
-    final ticker = company.ticker;
+    final ticker = this.ticker;
     final initial = Center(
       child: Text(
-        (ticker ?? company.name).characters.first.toUpperCase(),
+        (ticker ?? name).characters.first.toUpperCase(),
         style: TextStyle(
           color: const Color(0xFF16213E),
           fontWeight: FontWeight.bold,

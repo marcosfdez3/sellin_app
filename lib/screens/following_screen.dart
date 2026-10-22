@@ -81,7 +81,7 @@ class _CompanyCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CompanyLogo(company: company),
+          CompanyLogo(ticker: company.ticker, name: company.name),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
