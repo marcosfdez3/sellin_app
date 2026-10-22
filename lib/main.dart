@@ -16,21 +16,93 @@ import 'services/auth.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Nombres de meses en español para las fechas (DateFormat con 'es_ES')
-  await initializeDateFormatting('es_ES');
-
-  // Recupera la sesión guardada antes de decidir la primera pantalla
-  final auth = AuthController(ApiClient());
-  await auth.load();
-
-  // Carga el logo ya, para que la splash (LaunchOverlay) lo pinte en el primer frame
+  // Antes del primer frame solo se carga el logo de la splash: lo demás se
+  // carga con el logo ya en pantalla (SellinBootstrap)
   const logo = SvgAssetLoader(kWordmarkAsset);
   await svg.cache.putIfAbsent(logo.cacheKey(null), () => logo.loadBytes(null));
 
-  runApp(ProviderScope(
-    overrides: [authProvider.overrideWith((ref) => auth)],
-    child: InsiderTrackApp(router: _buildRouter(auth)),
-  ));
+  runApp(const SellinBootstrap());
+}
+
+const kWordmarkAsset = 'assets/images/sellin_wordmark.svg';
+
+/// Tiempo mínimo que se ve el logo de la splash
+const kSplashMinDuration = Duration(milliseconds: 1500);
+
+/// Arranque de la app. Muestra la splash (el logo grande sobre negro) mientras
+/// recupera la sesión guardada y carga las fechas en español, y como mínimo
+/// [kSplashMinDuration]; después pinta la app debajo y funde el logo.
+/// La splash del sistema es solo negra: Android 12+ escala y emborrona su
+/// icono, así que el logo se dibuja aquí, desde el SVG.
+class SellinBootstrap extends StatefulWidget {
+  const SellinBootstrap({super.key});
+
+  @override
+  State<SellinBootstrap> createState() => _SellinBootstrapState();
+}
+
+class _SellinBootstrapState extends State<SellinBootstrap> {
+  final _auth = AuthController(ApiClient());
+  GoRouter? _router;          // null mientras se carga
+  bool _splashVisible = true; // false = empieza el fundido
+  bool _splashDone = false;   // splash retirada
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    await Future.wait([
+      // Nombres de meses en español para las fechas (DateFormat con 'es_ES')
+      initializeDateFormatting('es_ES'),
+      // Sesión guardada: decide si la primera pantalla es el login
+      _auth.load(),
+      Future.delayed(kSplashMinDuration),
+    ]);
+    if (!mounted) return;
+    setState(() => _router = _buildRouter(_auth));
+    // El fundido empieza cuando la app ya está pintada debajo del logo
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() => _splashVisible = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final router = _router;
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (router != null)
+            ProviderScope(
+              overrides: [authProvider.overrideWith((ref) => _auth)],
+              child: InsiderTrackApp(router: router),
+            ),
+          if (!_splashDone)
+            AbsorbPointer(
+              child: AnimatedOpacity(
+                opacity: _splashVisible ? 1 : 0,
+                duration: const Duration(milliseconds: 400),
+                onEnd: () => setState(() => _splashDone = true),
+                child: ColoredBox(
+                  color: Colors.black,
+                  child: Center(
+                    child: FractionallySizedBox(
+                      widthFactor: 0.7,
+                      child: SvgPicture.asset(kWordmarkAsset),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 GoRouter _buildRouter(AuthController auth) => GoRouter(
@@ -91,7 +163,6 @@ class InsiderTrackApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: _buildTheme(),
       routerConfig: router,
-      builder: (context, child) => LaunchOverlay(child: child!),
     );
   }
 
@@ -123,62 +194,6 @@ class InsiderTrackApp extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
-    );
-  }
-}
-
-const kWordmarkAsset = 'assets/images/sellin_wordmark.svg';
-
-/// Splash de la app: el logo grande sobre negro al arrancar, que se funde
-/// con la primera pantalla. La splash del sistema es solo negra (Android 12+
-/// escala y emborrona su icono), así que el logo se dibuja aquí, desde el SVG.
-class LaunchOverlay extends StatefulWidget {
-  final Widget child;
-  const LaunchOverlay({super.key, required this.child});
-
-  @override
-  State<LaunchOverlay> createState() => _LaunchOverlayState();
-}
-
-class _LaunchOverlayState extends State<LaunchOverlay> {
-  bool _visible = true; // empieza el fundido
-  bool _done = false;   // overlay retirado
-
-  @override
-  void initState() {
-    super.initState();
-    // El tiempo cuenta desde que el logo ya está en pantalla
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 900), () {
-        if (mounted) setState(() => _visible = false);
-      });
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_done) return widget.child;
-    return Stack(
-      children: [
-        widget.child,
-        // Mientras se ve el logo no se puede tocar la app de debajo
-        AbsorbPointer(
-          child: AnimatedOpacity(
-            opacity: _visible ? 1 : 0,
-            duration: const Duration(milliseconds: 350),
-            onEnd: () => setState(() => _done = true),
-            child: ColoredBox(
-              color: Colors.black,
-              child: Center(
-                child: FractionallySizedBox(
-                  widthFactor: 0.7,
-                  child: SvgPicture.asset(kWordmarkAsset),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
