@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../services/api_client.dart';
 import '../services/auth.dart';
@@ -62,8 +63,58 @@ class TopScreen extends ConsumerWidget {
               signals: ref.watch(topSignalsProvider(type)),
               onRetry: refresh,
             ),
+            const _FollowHint(),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Anima a seguir acciones con la ☆. Solo sale mientras el usuario no sigue
+/// ninguna empresa (y no mientras se cargan sus seguidos, para no parpadear).
+class _FollowHint extends ConsumerWidget {
+  const _FollowHint();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final follows = ref.watch(followsProvider);
+    if (!follows.hasValue || follows.requireValue.isNotEmpty) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.star_rounded, color: Color(0xFFFFD93D), size: 22),
+              SizedBox(width: 8),
+              Text(
+                'Sigue tus acciones favoritas',
+                style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Pulsa la ☆ de cualquier acción para guardarla en Siguiendo '
+            'y tenerla siempre a mano.',
+            style: TextStyle(color: Colors.white60, fontSize: 13, height: 1.35),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () => context.go('/search'),
+              child: const Text('Buscar acciones'),
+            ),
+          ),
+        ],
       ),
     );
   }
