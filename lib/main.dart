@@ -26,8 +26,10 @@ Future<void> main() async {
 
 const kWordmarkAsset = 'assets/images/sellin_wordmark.svg';
 
-/// Tiempo mínimo que se ve el logo de la splash
-const kSplashMinDuration = Duration(milliseconds: 1500);
+/// La splash dura 1,5 s en total: el logo fijo como mínimo [kSplashMinDuration]
+/// y después [kSplashFadeDuration] de fundido con la app
+const kSplashMinDuration = Duration(milliseconds: 1100);
+const kSplashFadeDuration = Duration(milliseconds: 400);
 
 /// Arranque de la app. Muestra la splash (el logo grande sobre negro) mientras
 /// recupera la sesión guardada y carga las fechas en español, y como mínimo
@@ -86,13 +88,13 @@ class _SellinBootstrapState extends State<SellinBootstrap> {
             AbsorbPointer(
               child: AnimatedOpacity(
                 opacity: _splashVisible ? 1 : 0,
-                duration: const Duration(milliseconds: 400),
+                duration: kSplashFadeDuration,
                 onEnd: () => setState(() => _splashDone = true),
                 child: ColoredBox(
                   color: Colors.black,
                   child: Center(
                     child: FractionallySizedBox(
-                      widthFactor: 0.7,
+                      widthFactor: 0.55,
                       child: SvgPicture.asset(kWordmarkAsset),
                     ),
                   ),
