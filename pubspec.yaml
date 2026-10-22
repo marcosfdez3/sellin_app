@@ -27,6 +27,7 @@ dependencies:
   url_launcher: ^6.2.6
   flutter_secure_storage: ^11.2.0
   google_sign_in: ^7.2.0
+  flutter_svg: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -46,11 +47,11 @@ flutter_launcher_icons:
   image_path: "assets/images/sellin_logo.png"
 
 flutter_native_splash:
+  # La splash del sistema es solo fondo negro: el logo lo dibuja la app
+  # (LaunchOverlay en main.dart) desde el SVG, porque Android 12+ escala y
+  # emborrona el icono de su splash y además lo limita a un círculo de 192 dp.
   color: "#000000"
-  image: assets/images/sellin.png
   android_12:
-    # Android 12+ recorta el icono en un círculo dentro de un cuadrado:
-    # la imagen debe ser cuadrada y con margen para no deformarse.
     color: "#000000"
-    image: assets/images/sellin_splash_android12.png
-
+    # Sin imagen, Android 12+ pondría el icono de la app: se usa uno transparente
+    image: design/splash_blank.png

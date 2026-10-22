@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/auth.dart';
@@ -81,7 +82,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Image.asset('assets/images/sellin.png', height: 120),
+                      SvgPicture.asset('assets/images/sellin_wordmark.svg', height: 57),
                       const SizedBox(height: 24),
                       Text(
                         _isRegister ? 'Crear cuenta' : 'Iniciar sesión',

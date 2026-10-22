@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../services/api_client.dart';
@@ -32,10 +33,7 @@ class TopScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Image.asset(
-          'assets/images/sellin.png',
-          height: 70,
-        ),
+        title: SvgPicture.asset('assets/images/sellin_wordmark.svg', height: 33),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),

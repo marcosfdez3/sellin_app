@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -21,6 +22,10 @@ Future<void> main() async {
   // Recupera la sesión guardada antes de decidir la primera pantalla
   final auth = AuthController(ApiClient());
   await auth.load();
+
+  // Carga el logo ya, para que la splash (LaunchOverlay) lo pinte en el primer frame
+  const logo = SvgAssetLoader(kWordmarkAsset);
+  await svg.cache.putIfAbsent(logo.cacheKey(null), () => logo.loadBytes(null));
 
   runApp(ProviderScope(
     overrides: [authProvider.overrideWith((ref) => auth)],
@@ -86,6 +91,7 @@ class InsiderTrackApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: _buildTheme(),
       routerConfig: router,
+      builder: (context, child) => LaunchOverlay(child: child!),
     );
   }
 
@@ -117,6 +123,62 @@ class InsiderTrackApp extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
+    );
+  }
+}
+
+const kWordmarkAsset = 'assets/images/sellin_wordmark.svg';
+
+/// Splash de la app: el logo grande sobre negro al arrancar, que se funde
+/// con la primera pantalla. La splash del sistema es solo negra (Android 12+
+/// escala y emborrona su icono), así que el logo se dibuja aquí, desde el SVG.
+class LaunchOverlay extends StatefulWidget {
+  final Widget child;
+  const LaunchOverlay({super.key, required this.child});
+
+  @override
+  State<LaunchOverlay> createState() => _LaunchOverlayState();
+}
+
+class _LaunchOverlayState extends State<LaunchOverlay> {
+  bool _visible = true; // empieza el fundido
+  bool _done = false;   // overlay retirado
+
+  @override
+  void initState() {
+    super.initState();
+    // El tiempo cuenta desde que el logo ya está en pantalla
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 900), () {
+        if (mounted) setState(() => _visible = false);
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_done) return widget.child;
+    return Stack(
+      children: [
+        widget.child,
+        // Mientras se ve el logo no se puede tocar la app de debajo
+        AbsorbPointer(
+          child: AnimatedOpacity(
+            opacity: _visible ? 1 : 0,
+            duration: const Duration(milliseconds: 350),
+            onEnd: () => setState(() => _done = true),
+            child: ColoredBox(
+              color: Colors.black,
+              child: Center(
+                child: FractionallySizedBox(
+                  widthFactor: 0.7,
+                  child: SvgPicture.asset(kWordmarkAsset),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
