@@ -26,14 +26,17 @@ Future<void> main() async {
 
 const kWordmarkAsset = 'assets/images/sellin_wordmark.svg';
 
-/// La splash dura 2,5 s en total: el logo fijo como mínimo [kSplashMinDuration]
-/// y después [kSplashFadeDuration] de fundido con la app
-const kSplashMinDuration = Duration(milliseconds: 2100);
-const kSplashFadeDuration = Duration(milliseconds: 400);
+/// La splash dura 2,5 s en total: el logo entra creciendo desde el centro
+/// ([kSplashIntro]), se queda quieto hasta [kSplashMinDuration] desde el
+/// arranque y sale encogiéndose hacia el centro ([kSplashOutro]) mientras el
+/// negro se funde con la app.
+const kSplashIntro = Duration(milliseconds: 600);
+const kSplashMinDuration = Duration(milliseconds: 2000);
+const kSplashOutro = Duration(milliseconds: 500);
 
 /// Arranque de la app. Muestra la splash (el logo grande sobre negro) mientras
 /// recupera la sesión guardada y carga las fechas en español, y como mínimo
-/// [kSplashMinDuration]; después pinta la app debajo y funde el logo.
+/// [kSplashMinDuration]; después pinta la app debajo y retira el logo.
 /// La splash del sistema es solo negra: Android 12+ escala y emborrona su
 /// icono, así que el logo se dibuja aquí, desde el SVG.
 class SellinBootstrap extends StatefulWidget {
@@ -43,15 +46,32 @@ class SellinBootstrap extends StatefulWidget {
   State<SellinBootstrap> createState() => _SellinBootstrapState();
 }
 
-class _SellinBootstrapState extends State<SellinBootstrap> {
+class _SellinBootstrapState extends State<SellinBootstrap> with TickerProviderStateMixin {
   final _auth = AuthController(ApiClient());
-  GoRouter? _router;          // null mientras se carga
-  bool _splashVisible = true; // false = empieza el fundido
-  bool _splashDone = false;   // splash retirada
+  GoRouter? _router;  // null mientras se carga
+  bool _splashDone = false;
+
+  late final _intro = AnimationController(vsync: this, duration: kSplashIntro);
+  late final _outro = AnimationController(vsync: this, duration: kSplashOutro)
+    ..addStatusListener((status) {
+      if (status == AnimationStatus.completed) setState(() => _splashDone = true);
+    });
+
+  // Entrada: de nada a tamaño completo, frenando al final
+  late final _introScale = CurvedAnimation(parent: _intro, curve: Curves.easeOutCubic);
+  // Salida, al revés: encoge hacia el centro acelerando (la primera parte)…
+  late final _outroScale = CurvedAnimation(
+    parent: _outro,
+    curve: const Interval(0, 0.7, curve: Curves.easeInCubic),
+  );
+  // …y el fondo negro se funde con la app al final
+  late final _outroFade = CurvedAnimation(parent: _outro, curve: const Interval(0.4, 1));
 
   @override
   void initState() {
     super.initState();
+    // La entrada empieza con el primer frame ya en pantalla
+    WidgetsBinding.instance.addPostFrameCallback((_) => _intro.forward());
     _load();
   }
 
@@ -65,10 +85,17 @@ class _SellinBootstrapState extends State<SellinBootstrap> {
     ]);
     if (!mounted) return;
     setState(() => _router = _buildRouter(_auth));
-    // El fundido empieza cuando la app ya está pintada debajo del logo
+    // La salida empieza cuando la app ya está pintada debajo del logo
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(() => _splashVisible = false);
+      if (mounted) _outro.forward();
     });
+  }
+
+  @override
+  void dispose() {
+    _intro.dispose();
+    _outro.dispose();
+    super.dispose();
   }
 
   @override
@@ -86,18 +113,26 @@ class _SellinBootstrapState extends State<SellinBootstrap> {
             ),
           if (!_splashDone)
             AbsorbPointer(
-              child: AnimatedOpacity(
-                opacity: _splashVisible ? 1 : 0,
-                duration: kSplashFadeDuration,
-                onEnd: () => setState(() => _splashDone = true),
-                child: ColoredBox(
-                  color: Colors.black,
-                  child: Center(
-                    child: FractionallySizedBox(
-                      widthFactor: 0.55,
-                      child: SvgPicture.asset(kWordmarkAsset),
+              child: AnimatedBuilder(
+                animation: Listenable.merge([_intro, _outro]),
+                builder: (context, logo) {
+                  final scale = _introScale.value * (1 - _outroScale.value);
+                  return Opacity(
+                    opacity: 1 - _outroFade.value,
+                    child: ColoredBox(
+                      color: Colors.black,
+                      child: Center(
+                        child: Opacity(
+                          opacity: scale.clamp(0.0, 1.0),
+                          child: Transform.scale(scale: scale, child: logo),
+                        ),
+                      ),
                     ),
-                  ),
+                  );
+                },
+                child: FractionallySizedBox(
+                  widthFactor: 0.55,
+                  child: SvgPicture.asset(kWordmarkAsset),
                 ),
               ),
             ),
