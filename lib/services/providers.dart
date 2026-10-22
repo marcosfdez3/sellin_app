@@ -74,6 +74,13 @@ final topSignalsProvider = FutureProvider.autoDispose
   );
 });
 
+// ─── Grandes inversores ───────────────────────────────────────────────────────
+
+/// Movimientos de los grandes inversores (13F). Cambian como mucho una vez al día.
+final investorMovesProvider = FutureProvider.autoDispose<List<InvestorMove>>((ref) {
+  return ref.watch(apiClientProvider).getInvestorMoves();
+});
+
 // ─── Siguiendo ────────────────────────────────────────────────────────────────
 
 /// Empresas que sigue el usuario. Se recarga al iniciar o cerrar sesión.

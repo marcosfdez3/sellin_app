@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/api_client.dart';
 import '../services/auth.dart';
 import '../services/providers.dart';
+import '../widgets/investor_ticker.dart';
 import '../widgets/signal_card.dart';
 
 /// Lado que se muestra en el Top: 'buy' (compras) o 'sell' (ventas).
@@ -23,7 +24,10 @@ class TopScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final type = ref.watch(_topTypeProvider);
-    void refresh() => ref.invalidate(topSignalsProvider(type));
+    void refresh() {
+      ref.invalidate(topSignalsProvider(type));
+      ref.invalidate(investorMovesProvider);
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -48,6 +52,7 @@ class TopScreen extends ConsumerWidget {
         child: ListView(
           padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.paddingOf(context).bottom),
           children: [
+            const _InvestorMovesStrip(),
             _TopSection(
               header: _TypeDropdown(
                 value: type,
@@ -59,6 +64,36 @@ class TopScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Cinta de movimientos de los grandes inversores, con el trimestre encima.
+/// Mientras carga o si falla no ocupa sitio: no debe tapar el Top.
+class _InvestorMovesStrip extends ConsumerWidget {
+  const _InvestorMovesStrip();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final moves = ref.watch(investorMovesProvider).valueOrNull ?? const [];
+    if (moves.isEmpty) return const SizedBox.shrink();
+
+    final latest = moves.map((m) => m.period).reduce((a, b) => a.isAfter(b) ? a : b);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
+            child: Text(
+              'Grandes inversores · ${quarterLabel(latest)}',
+              style: const TextStyle(color: Colors.white54, fontSize: 12),
+            ),
+          ),
+          InvestorTicker(moves: moves),
+        ],
       ),
     );
   }

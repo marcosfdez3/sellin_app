@@ -128,6 +128,14 @@ class ApiClient {
 
   Future<void> follow(int companyId) => _dio.put('/follows/$companyId');
 
+  // ─── Grandes inversores ──────────────────────────────────────────────────────
+
+  Future<List<InvestorMove>> getInvestorMoves({int limit = 30}) async {
+    final response = await _dio.get('/investors/moves', queryParameters: {'limit': limit});
+    final hits = response.data as List;
+    return hits.map((j) => InvestorMove.fromJson(j)).toList();
+  }
+
   Future<void> unfollow(int companyId) => _dio.delete('/follows/$companyId');
 }
 
@@ -217,6 +225,36 @@ class Follow {
         followedAt: DateTime.parse(j['followed_at']),
         latestSignal: j['latest_signal'] != null ? Signal.fromJson(j['latest_signal']) : null,
       );
+}
+
+/// Movimiento de un gran inversor en su último 13F (cartera trimestral).
+class InvestorMove {
+  final String investor;
+  final String? ticker;
+  final String issuer;
+  final String action; // 'new' | 'add' | 'reduce' | 'exit'
+  final double valueChange; // USD; negativo si reduce o vende
+  final DateTime period; // trimestre del 13F
+
+  InvestorMove({
+    required this.investor,
+    this.ticker,
+    required this.issuer,
+    required this.action,
+    required this.valueChange,
+    required this.period,
+  });
+
+  factory InvestorMove.fromJson(Map<String, dynamic> j) => InvestorMove(
+        investor: j['investor'],
+        ticker: j['ticker'],
+        issuer: j['issuer'],
+        action: j['action'],
+        valueChange: (j['value_change'] as num).toDouble(),
+        period: DateTime.parse(j['period']),
+      );
+
+  bool get isBuy => action == 'new' || action == 'add';
 }
 
 /// Cómo se muestra cada rol de insider (los que no están aquí salen tal cual).
