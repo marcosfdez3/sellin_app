@@ -26,9 +26,9 @@ Future<void> main() async {
 
 const kWordmarkAsset = 'assets/images/sellin_wordmark.svg';
 
-/// La splash dura 1,5 s en total: el logo fijo como mínimo [kSplashMinDuration]
+/// La splash dura 2,5 s en total: el logo fijo como mínimo [kSplashMinDuration]
 /// y después [kSplashFadeDuration] de fundido con la app
-const kSplashMinDuration = Duration(milliseconds: 1100);
+const kSplashMinDuration = Duration(milliseconds: 2100);
 const kSplashFadeDuration = Duration(milliseconds: 400);
 
 /// Arranque de la app. Muestra la splash (el logo grande sobre negro) mientras
