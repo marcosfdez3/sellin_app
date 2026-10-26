@@ -8,6 +8,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'screens/company_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/following_screen.dart';
+import 'screens/forgot_password_screen.dart';
 import 'screens/search_screen.dart';
 import 'screens/top_screen.dart';
 import 'screens/signal_detail_screen.dart';
@@ -145,15 +146,20 @@ class _SellinBootstrapState extends State<SellinBootstrap> with TickerProviderSt
 GoRouter _buildRouter(AuthController auth) => GoRouter(
   refreshListenable: auth,
   redirect: (context, state) {
-    final onLogin = state.matchedLocation == '/login';
-    if (!auth.isLoggedIn) return onLogin ? null : '/login';
-    if (onLogin) return '/';
+    // Pantallas que se ven sin sesión iniciada
+    final public = const {'/login', '/forgot'}.contains(state.matchedLocation);
+    if (!auth.isLoggedIn) return public ? null : '/login';
+    if (public) return '/';
     return null;
   },
   routes: [
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/forgot',
+      builder: (context, state) => ForgotPasswordScreen(initialEmail: state.extra as String?),
     ),
     ShellRoute(
       builder: (context, state, child) => MainShell(child: child),

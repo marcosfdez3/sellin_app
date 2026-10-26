@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../services/auth.dart';
+import '../widgets/auth_input.dart';
 
 /// Pantalla de inicio de sesión y registro (se alterna con el botón inferior).
 class LoginScreen extends ConsumerStatefulWidget {
@@ -99,7 +101,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         keyboardType: TextInputType.emailAddress,
                         autofillHints: const [AutofillHints.email],
                         textInputAction: TextInputAction.next,
-                        decoration: _inputDecoration('Email', Icons.email_outlined),
+                        decoration: authInputDecoration('Email', Icons.email_outlined),
                         validator: (value) {
                           final email = value?.trim() ?? '';
                           if (email.isEmpty) return 'Introduce tu email';
@@ -118,7 +120,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ],
                         textInputAction: TextInputAction.done,
                         onFieldSubmitted: (_) => _submit(),
-                        decoration: _inputDecoration('Contraseña', Icons.lock_outline).copyWith(
+                        decoration: authInputDecoration('Contraseña', Icons.lock_outline).copyWith(
                           suffixIcon: IconButton(
                             icon: Icon(_obscurePassword
                                 ? Icons.visibility_outlined
@@ -136,6 +138,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           return null;
                         },
                       ),
+                      if (!_isRegister)
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: _loading
+                                ? null
+                                : () => context.push('/forgot', extra: _emailController.text.trim()),
+                            child: Text('¿Has olvidado tu contraseña?', style: TextStyle(color: primary)),
+                          ),
+                        ),
                       if (_error != null) ...[
                         const SizedBox(height: 16),
                         Text(
@@ -213,19 +225,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  InputDecoration _inputDecoration(String label, IconData icon) {
-    return InputDecoration(
-      labelText: label,
-      prefixIcon: Icon(icon),
-      filled: true,
-      fillColor: const Color(0xFF16213E),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
       ),
     );
   }

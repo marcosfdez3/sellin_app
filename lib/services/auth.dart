@@ -44,6 +44,13 @@ class AuthController extends ChangeNotifier {
     await _setToken(await _api.register(email.trim(), password));
   }
 
+  Future<void> forgotPassword(String email) => _api.forgotPassword(email.trim());
+
+  /// Cambia la contraseña con el código del email y deja la sesión iniciada.
+  Future<void> resetPassword(String email, String code, String newPassword) async {
+    await _setToken(await _api.resetPassword(email.trim(), code.trim(), newPassword));
+  }
+
   /// Abre el selector de cuentas de Google. Si el usuario lo cancela,
   /// termina sin error y sin iniciar sesión.
   Future<void> loginWithGoogle() async {

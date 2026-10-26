@@ -76,6 +76,29 @@ class ApiClient {
     }
   }
 
+  /// Pide que se envíe al email un código de 6 cifras para cambiar la contraseña.
+  Future<void> forgotPassword(String email) async {
+    try {
+      await _dio.post('/auth/password/forgot', data: {'email': email});
+    } on DioException catch (e) {
+      throw AuthException(_authErrorMessage(e));
+    }
+  }
+
+  /// Cambia la contraseña con el código recibido. Devuelve el token (sesión iniciada).
+  Future<String> resetPassword(String email, String code, String newPassword) async {
+    try {
+      final response = await _dio.post('/auth/password/reset', data: {
+        'email': email,
+        'code': code,
+        'new_password': newPassword,
+      });
+      return response.data['access_token'] as String;
+    } on DioException catch (e) {
+      throw AuthException(_authErrorMessage(e));
+    }
+  }
+
   String _authErrorMessage(DioException e) {
     final response = e.response;
     if (response == null) return 'No se puede conectar con el servidor';
